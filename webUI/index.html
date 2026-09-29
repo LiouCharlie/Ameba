@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f1e8" />
+    <title>AMEBA 聲音控制｜LED 控制台</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <nav class="topbar" aria-label="系統資訊">
+        <a class="brand" href="#top" aria-label="返回頂端">
+          <span class="brand-mark">AM</span>
+          <span>AMEBA MINI LAB</span>
+        </a>
+        <div class="topbar-meta">
+          <span class="live-dot" aria-hidden="true"></span>
+          PYTHON SERIAL · COM3
+        </div>
+      </nav>
+
+      <main id="top">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="kicker">VOICE × HARDWARE</p>
+            <h1>AMEBA<br /><em>聲音控制</em></h1>
+            <p class="intro">
+              說出「左邊開燈」或「右邊開燈」，指令會經由 Python 傳送至
+              AMB82-MINI，畫面只顯示開發板實際回報的燈號狀態。
+            </p>
+          </div>
+
+          <aside class="voice-console" aria-label="語音控制">
+            <div class="console-head">
+              <span>VOICE INPUT</span>
+              <label class="language-picker">
+                <span>LANG</span>
+                <select id="speech-language" aria-label="語音辨識語言">
+                  <option value="zh-TW">中文</option>
+                  <option value="en-US">English</option>
+                </select>
+              </label>
+            </div>
+            <div class="voice-readout">
+              <span class="wave" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i>
+              </span>
+              <div>
+                <small>語音辨識</small>
+                <p id="recognition-text">等待開始</p>
+              </div>
+            </div>
+            <button id="listen" class="listen-button" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-5a3.5 3.5 0 1 0-7 0v5A3.5 3.5 0 0 0 12 15Zm-6-4a6 6 0 0 0 12 0M12 17v4m-3 0h6" />
+              </svg>
+              開始語音辨識
+            </button>
+            <p id="voice-hint" class="voice-hint">按一次持續聆聽，完成後再按停止</p>
+            <label class="reply-toggle">
+              <input id="speech-reply" type="checkbox" checked />
+              <span>語音回覆</span>
+            </label>
+            <div class="command-cheatsheet" aria-label="簡易英文指令">
+              <span>EN</span>
+              <code>Blue on</code><code>Blue off</code>
+              <code>Green on</code><code>Green off</code>
+              <code>Lights on</code><code>Lights off</code>
+              <code>Blink now</code>
+            </div>
+          </aside>
+        </section>
+
+        <section class="status-strip" aria-label="系統狀態">
+          <article>
+            <span class="status-index">01</span>
+            <div><small>連線狀態</small><p id="connection-text">正在尋找 Python 控制程式…</p></div>
+          </article>
+          <article>
+            <span class="status-index">02</span>
+            <div><small>執行結果</small><p id="execution-text">尚未送出指令</p></div>
+          </article>
+          <button id="connect" class="connect-button">連接 AMB82-MINI</button>
+        </section>
+
+        <section class="section led-section">
+          <div class="section-title">
+            <div>
+              <p class="kicker">LIVE BOARD STATE</p>
+              <h2>LED 即時狀態</h2>
+            </div>
+            <p>狀態資料來自開發板回傳，不使用前端預測。</p>
+          </div>
+
+          <div class="lamp-grid">
+            <article id="blue-lamp" class="lamp-card blue unknown">
+              <div class="lamp-visual" aria-hidden="true"><span></span></div>
+              <div class="lamp-info">
+                <span class="lamp-label">LEFT CHANNEL · D23</span>
+                <h3>藍燈</h3>
+                <strong>未知</strong>
+              </div>
+              <span class="state-chip">BOARD</span>
+            </article>
+            <article id="green-lamp" class="lamp-card green unknown">
+              <div class="lamp-visual" aria-hidden="true"><span></span></div>
+              <div class="lamp-info">
+                <span class="lamp-label">RIGHT CHANNEL · D24</span>
+                <h3>綠燈</h3>
+                <strong>未知</strong>
+              </div>
+              <span class="state-chip">BOARD</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="workspace-grid">
+          <article class="panel manual-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="kicker">MANUAL TEST</p>
+                <h2>手動控制</h2>
+              </div>
+              <span class="number">A</span>
+            </div>
+            <p class="panel-note">不使用麥克風，直接驗證 Python、序列埠與 LED。</p>
+            <div class="button-grid">
+              <button data-command="LEFT_ON" disabled><span class="mini-dot blue-dot"></span>藍燈開</button>
+              <button data-command="LEFT_OFF" disabled>藍燈關</button>
+              <button data-command="RIGHT_ON" disabled><span class="mini-dot green-dot"></span>綠燈開</button>
+              <button data-command="RIGHT_OFF" disabled>綠燈關</button>
+              <button data-command="ALL_OFF" disabled>全部關閉</button>
+              <button data-command="BLINK_3" class="accent-action" disabled>閃爍三次</button>
+            </div>
+          </article>
+
+          <article class="panel log-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="kicker">BOARD FEEDBACK</p>
+                <h2>事件紀錄</h2>
+              </div>
+              <span class="number">B</span>
+            </div>
+            <p class="panel-note">與 CMD 同步，保留語音、指令及板卡回覆。</p>
+            <ol id="event-log" aria-live="polite"></ol>
+          </article>
+        </section>
+      </main>
+
+      <footer>
+        <span>AMB82-MINI VOICE LED SYSTEM</span>
+        <span>VIBE CODING PROJECT · 2026</span>
+      </footer>
+    </div>
+
+    <script type="module" src="./app.js?v=python-sapi-1"></script>
+  </body>
+</html>
